@@ -1,0 +1,11 @@
+#cloud-config
+#vim:syntax=yaml
+users:
+  - name: ec2-user
+    gecos: some text can be here
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    plain_text_passwd: somepassword # it will be better to edit and even to encrypt
+    groups: sudo, admin
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa 
