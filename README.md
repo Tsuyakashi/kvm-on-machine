@@ -37,6 +37,7 @@
   ``` 
 
 ## Useful links:
+  - amazon download page: https://docs.aws.amazon.com/linux/al2023/ug/outside-ec2-download.html
   - amzn2 image: https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
   - how to install by yourself guide: https://cloudspinx.com/how-to-install-amazon-linux-2023-on-kvm-using-qcow2-image/
   - kvm in container: https://github.com/qemus/qemu
