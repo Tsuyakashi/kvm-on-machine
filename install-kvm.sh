@@ -1,3 +1,4 @@
+sudo mkdir -p /var/lib/libvirt/images/
 echo "coping image..."
 sudo cp \
     ./images/amzn2-template.qcow2 \
@@ -21,6 +22,6 @@ sudo virt-install \
     --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
     --os-variant fedora36 \
     --virt-type kvm \
-    --graphics vnc \
+    --graphics none \
     --console pty,target_type=serial \
     --import
