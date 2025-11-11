@@ -4,14 +4,14 @@
   - download amzn2 image as amzn2-template.qcow2 in images/
   - generate rsa keys with 
     ```bash
-      ssh-keygen -t rsa   
+    ssh-keygen -t rsa
     ```
   - update user-data with rsa.pub
   - run install-kvm.sh
 
 ## How to connect:
   ```bash
-    ssh -i "REPO_DIR/keys/rsa.key" ec2-user@ip.from.kvm
+ssh -i "REPO_DIR/keys/rsa.key" ec2-user@ip.from.kvm
   ```  
 
 ## Needs:
