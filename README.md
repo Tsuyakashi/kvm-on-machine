@@ -19,10 +19,10 @@
   - cpu-checker
   - libvirt-clients
   - libvirt-daemon
-  - qemu
   - qemu-kvm
+  - mkisofs
   ```bash
-    sudo apt -y install bridge-utils cpu-checker libvirt-clients libvirt-daemon qemu qemu-kvm
+sudo apt -y install bridge-utils cpu-checker libvirt-clients libvirt-daemon mkisofs qemu-kvm
   ```  
 
 ## XML network config:
