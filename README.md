@@ -4,25 +4,32 @@
   - download amzn2 image as amzn2-template.qcow2 in images/
   - generate rsa keys with 
     ```bash
-    ssh-keygen -t rsa
+    ssh-keygen -t rsa   
     ```
   - update user-data with rsa.pub
+  - install requierements
+  - libvirtd...
   - run install-kvm.sh
+
+  ### !! restart ma be requiered !! 
 
 ## How to connect:
   ```bash
-ssh -i "REPO_DIR/keys/rsa.key" ec2-user@ip.from.kvm
+  ssh -i "REPO_DIR/keys/rsa.key" ec2-user@ip.from.kvm
   ```  
 
 ## Needs:
-  - bridge-utils
-  - cpu-checker
-  - libvirt-clients
-  - libvirt-daemon
-  - qemu-kvm
-  - mkisofs
   ```bash
-sudo apt -y install bridge-utils cpu-checker libvirt-clients libvirt-daemon mkisofs qemu-kvm
+  sudo apt -y install \
+    bridge-utils \
+    cpu-checker \
+    libvirt-clients \
+    libvirt-daemon \
+    libvirt-daemon-system \
+    qemu-kvm \
+    virtinst \
+    virt-manager \
+    genisoimage
   ```  
 
 ## XML network config:
