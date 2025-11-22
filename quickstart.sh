@@ -7,21 +7,18 @@ APT_UPDATED_PACKS=0
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
-		echo "[KVM ISTALLER]: You need to run this script as root"
+		echo "[KVM INSTALLER]: You need to run this script as root"
 		exit 1
 	fi
 }
 
 function init() {
     isRoot
-
-    installRequirements
-    exit
     
 	echo "Welcome to kvm-on-machine installer!"
 	echo "The git repository is available at: https://github.com/Tsuyakashi/kvm-on-machine"
 	echo ""
-    echo "[KVM ISTALLER]: Start autoinstallaion?"
+    echo "[KVM INSTALLER]: Start autoinstallaion?"
 	read -n1 -r -p "Press any key to continue..."
 
     fullInstall
@@ -109,7 +106,7 @@ function debugMenu () {
 
 function installRequirements() {
     # add installation check
-    echo "[KVM ISTALLER]: Installing requied packages with apt"
+    echo "[KVM INSTALLER]: Installing requied packages with apt"
     
     
     checkPacks "bridge-utils" 
@@ -131,15 +128,15 @@ function checkPacks() {
             sudo apt update > /dev/null
             APT_UPDATED_PACKS=1
         fi
-        echo "[KVM ISTALLER]: installing $PACKAGE_NAME"
+        echo "[KVM INSTALLER]: installing $PACKAGE_NAME"
         sudo apt install -y "$PACKAGE_NAME" > /dev/null
     else
-        echo "[KVM ISTALLER]: $PACKAGE_NAME is installed."
+        echo "[KVM INSTALLER]: $PACKAGE_NAME is installed."
     fi
 }    
 
 function getAmznImage() {
-    echo "[KVM ISTALLER]: Getting amazon linux image"
+    echo "[KVM INSTALLER]: Getting amazon linux image"
     if [ ! -f "./images/amzn2-template.qcow2" ]; then
         if [ ! -d "./images" ]; then
             mkdir images/
@@ -147,7 +144,7 @@ function getAmznImage() {
         wget -O ./images/amzn2-template.qcow2 \
             https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
     else 
-        echo "[KVM ISTALLER]: Already downloaded"
+        echo "[KVM INSTALLER]: Already downloaded"
     fi
 } 
 
@@ -158,7 +155,7 @@ function mkLibvirtDir() {
 
 function cpImage() {
     #add reinstalling
-    echo "[KVM ISTALLER]: Coping image"
+    echo "[KVM INSTALLER]: Coping image"
     sudo cp \
         ./images/amzn2-template.qcow2 \
         /var/lib/libvirt/images/amzn2-root.qcow2
@@ -166,19 +163,19 @@ function cpImage() {
 
 function keysGen() {
     if [ ! -f "./keys/rsa.key" ]; then
-        echo "[KVM ISTALLER]: Generating rsa keys"
+        echo "[KVM INSTALLER]: Generating rsa keys"
         if [ ! -d "./keys" ]; then
             mkdir keys/
         fi
         ssh-keygen -f ./keys/rsa.key -t rsa -N "" > /dev/null
     else
-        echo "[KVM ISTALLER]: Keys already exist"
+        echo "[KVM INSTALLER]: Keys already exist"
     fi
     
 }
 
 function seedConfigGen() {
-    echo "[KVM ISTALLER]: Creating seed config"
+    echo "[KVM INSTALLER]: Creating seed config"
     if [ ! -d "./seedconfig" ]; then
         mkdir seedconfig/
     fi
@@ -197,20 +194,21 @@ users:
       - $(cat ./keys/rsa.key.pub)
 EOF
     else 
-        echo "[KVM ISTALLER]: user-data already exists"
+        echo "[KVM INSTALLER]: user-data already exists"
     fi
+    
     if [ ! -f "./seedconfig/meta-data" ]; then
         tee -a seedconfig/meta-data > /dev/null <<EOF
 #cloud-config
 local-hostname: Amazon-Linux-2023.local
 EOF
     else 
-        echo "[KVM ISTALLER]: meta-data already exists"
+        echo "[KVM INSTALLER]: meta-data already exists"
     fi
 }
 
 function mkIso() {
-    echo "[KVM ISTALLER]: Making iso"
+    echo "[KVM INSTALLER]: Making iso"
     sudo genisoimage \
         -output /var/lib/libvirt/images/seed.iso \
         -volid cidata \
@@ -221,7 +219,7 @@ function mkIso() {
 }
 
 function initKvm() {
-    echo "[KVM ISTALLER]: Installing kvm"
+    echo "[KVM INSTALLER]: Installing kvm"
     sudo virt-install \
         --name $VM_NAME \
         --memory 2048 \

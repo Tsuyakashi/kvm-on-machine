@@ -27,7 +27,7 @@ virsh domifaddr Amazon-Linux-2023
 ```
 ### 2. Change access rights for rsa.key
 ```bash
-sudo chmod 600 ./keys/rsa.key
+sudo chmod 644 ./keys/rsa.key
 ```
 ### 3. Connect by ssh
 ```bash
