@@ -1,3 +1,5 @@
-/images/amzn2-template.qcow2
+images/amzn2-template.qcow2
 keys/rsa.key
 keys/rsa.key.pub
+seedconfig/meta-data
+seedconfig/user-data
