@@ -32,23 +32,27 @@ function manageMenu() {
 	echo ""
 	echo "What do you want to do?"
 	echo "   1) Show VM"
-	echo "   2) Shutdown VM"
-	echo "   3) Destroy VM"
-	echo "   4) Exit"
-    until [[ ${MENU_OPTION} =~ ^[1-4]$ ]]; do
-		read -rp "Select an option [1-4]: " MENU_OPTION
+	echo "   2) Check VM ip"
+	echo "   3) Shutdown VM"
+	echo "   4) Destroy VM"
+	echo "   5) Exit"
+    until [[ ${MENU_OPTION} =~ ^[1-5]$ ]]; do
+		read -rp "Select an option [1-5]: " MENU_OPTION
 	done
 	case "${MENU_OPTION}" in
 	1)
 		listVM
 		;;
 	2)
+        showIP
+        ;;
+    3)
 		shutVMDown
 		;;
-	3)
+	4)
 		destroyVM
 		;;
-	4)
+	5)
 		exit 0
 		;;
 	esac
@@ -168,6 +172,7 @@ function keysGen() {
             mkdir keys/
         fi
         ssh-keygen -f ./keys/rsa.key -t rsa -N "" > /dev/null
+        sudo chmod 644 ./keys/rsa.key
     else
         echo "[KVM INSTALLER]: Keys already exist"
     fi
@@ -228,7 +233,7 @@ function initKvm() {
         --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
         --os-variant fedora36 \
         --virt-type kvm \
-        --graphics none \
+        --graphics vnc \
         --console pty,target_type=serial \
         --import
 }
@@ -249,13 +254,17 @@ function listVM () {
     virsh list | grep $VM_NAME
 }
 
+function showIP () {
+    virsh domifaddr $VM_NAME
+}
+
 function shutVMDown() {
     virsh shutdown $VM_NAME
 }
 
 function destroyVM () {
     virsh destroy $VM_NAME
-    virsh undefine Amazon-Linux-2023 --remove-all-storage
+    virsh undefine $VM_NAME --remove-all-storage
 }
 
 if [[ "$1" == "--full" ]]; then

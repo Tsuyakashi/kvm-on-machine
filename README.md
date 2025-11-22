@@ -25,7 +25,7 @@ sudo ./quickstart.sh
 ```bash
 virsh domifaddr Amazon-Linux-2023
 ```
-### 2. Change access rights for rsa.key
+### 2. Check access rights for `rsa.key`
 ```bash
 sudo chmod 644 ./keys/rsa.key
 ```
