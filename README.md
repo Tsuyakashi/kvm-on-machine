@@ -1,32 +1,49 @@
 # Amazon AWS EC2 on KVM/QEMU
-## How to run:
-  - clone repo
-  - download amzn2 image as amzn2-template.qcow2 in images/
-  - generate rsa keys with 
-    ```bash
-    ssh-keygen -t rsa   
-    ```
-  - update user-data with rsa.pub
-  - install requierements
-  - libvirtd...
-  - run install-kvm.sh
+### Bash скрипт автоматизирующий установку VM Amazon Linux 2023
+## Quick start run:
+### 1. Clone the repo:
+```bash
+git clone https://github.com/Tsuyakashi/kvm-on-machine.git
+```
+### 2. `cd` to the dir
+```bash
+cd kvm-on-machine
+```
+### 3. Make sure script executable
+```bash
+chmod +x quickstart.sh
+```
+### 4. Run script with `sudo`
+```bash
+sudo ./quickstart.sh
+```
 
   ### !! restart ma be requiered !! 
 
 ## How to connect:
-  ```bash
-  ssh -i "REPO_DIR/keys/rsa.key" ec2-user@ip.from.kvm
-  ```  
+### 1. Check VM's ip
+```bash
+virsh domifaddr Amazon-Linux-2023
+```
+### 2. Change access rights for rsa.key
+```bash
+sudo chmod 600 ./keys/rsa.key
+```
+### 3. Connect by ssh
+```bash
+ssh -i "./keys/keys/rsa.key" ec2-user@vm.ip
+```  
 
-## Needs:
+## Reqs:
   ```bash
+  sudo apt update
   sudo apt -y install \
     bridge-utils \
     cpu-checker \
     libvirt-clients \
     libvirt-daemon \
     libvirt-daemon-system \
-    qemu-kvm \
+    qemu-system-x86 \
     virtinst \
     virt-manager \
     genisoimage
@@ -53,6 +70,6 @@
 
 ## Useful links:
   - amazon download page: https://docs.aws.amazon.com/linux/al2023/ug/outside-ec2-download.html
-  - amzn2 image: https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
+  - amzn2 image download link: https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
   - how to install by yourself guide: https://cloudspinx.com/how-to-install-amazon-linux-2023-on-kvm-using-qcow2-image/
   - kvm in container: https://github.com/qemus/qemu
