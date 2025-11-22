@@ -18,7 +18,7 @@ chmod +x quickstart.sh
 sudo ./quickstart.sh
 ```
 
-  ### !! restart ma be requiered !! 
+  ### !! restart may be requiered !! 
 
 ## How to connect:
 ### 1. Check VM's ip
