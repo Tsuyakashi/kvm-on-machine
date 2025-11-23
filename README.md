@@ -33,7 +33,19 @@ sudo chmod 644 ./keys/rsa.key
 ```bash
 ssh -i "./keys/keys/rsa.key" ec2-user@vm.ip
 ```  
+## Added:
+### Ubuntu distro by running:
+```bash
+sudo ./quickstart.sh --ubuntu
+```
+- but personal seedconfig didn't added yet
+- same with resize img func
+### Also exists:
+```bash
+sudo ./quickstart.sh --full # to skip instalation approve
 
+sudo ./quickstart.sh --debug # for debug menu
+```
 ## Reqs:
   ```bash
   sudo apt update

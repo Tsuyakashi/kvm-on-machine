@@ -3,7 +3,22 @@
 set -e
 
 VM_NAME="Amazon-Linux-2023"
+VM_USER=ec2-user
+VM_IMAGE=amzn2-root.qcow2
+VM_IMAGE_FORMAT=qcow2
+VM_IMAGE_TEMPLATE=amzn2-template.qcow2
+VM_IMAGE_LINK=https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
 APT_UPDATED_PACKS=0
+
+if [[ "$1" == "--ubuntu" ]]; then
+    VM_NAME="Ubuntu-noble"
+    VM_USER=ubuntu
+    VM_IMAGE=ubuntu-root.img
+    VM_IMAGE_FORMAT=img
+    VM_IMAGE_TEMPLATE=ubuntu-template.img
+    VM_IMAGE_LINK=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+fi
+    
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
@@ -18,7 +33,7 @@ function init() {
 	echo "Welcome to kvm-on-machine installer!"
 	echo "The git repository is available at: https://github.com/Tsuyakashi/kvm-on-machine"
 	echo ""
-    echo "[KVM INSTALLER]: Start autoinstallaion?"
+    echo "[KVM INSTALLER]: Start $VM_NAME autoinstallaion?"
 	read -n1 -r -p "Press any key to continue..."
 
     fullInstall
@@ -129,24 +144,24 @@ function checkPacks() {
     local PACKAGE_NAME="$1" 
     if ! dpkg -s "$PACKAGE_NAME" &>/dev/null; then
         if [[ APT_UPDATED_PACKS != true ]]; then
-            sudo apt update > /dev/null
+            sudo apt update &> /dev/null
             APT_UPDATED_PACKS=1
         fi
         echo "[KVM INSTALLER]: installing $PACKAGE_NAME"
-        sudo apt install -y "$PACKAGE_NAME" > /dev/null
+        sudo apt install -y "$PACKAGE_NAME" &> /dev/null
     else
         echo "[KVM INSTALLER]: $PACKAGE_NAME is installed."
     fi
 }    
 
 function getAmznImage() {
-    echo "[KVM INSTALLER]: Getting amazon linux image"
-    if [ ! -f "./images/amzn2-template.qcow2" ]; then
+    echo "[KVM INSTALLER]: Getting $VM_NAME image"
+    if [ ! -f "./images/$VM_IMAGE_TEMPLATE" ]; then
         if [ ! -d "./images" ]; then
             mkdir images/
         fi
-        wget -O ./images/amzn2-template.qcow2 \
-            https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
+        wget -O ./images/$VM_IMAGE_TEMPLATE \
+            $VM_IMAGE_LINK
     else 
         echo "[KVM INSTALLER]: Already downloaded"
     fi
@@ -161,8 +176,17 @@ function cpImage() {
     #add reinstalling
     echo "[KVM INSTALLER]: Coping image"
     sudo cp \
-        ./images/amzn2-template.qcow2 \
-        /var/lib/libvirt/images/amzn2-root.qcow2
+        ./images/$VM_IMAGE_TEMPLATE \
+        /var/lib/libvirt/images/$VM_IMAGE
+}
+
+# add to init
+IMAGE_SIZE=40g
+function resizeImage() {
+    echo "Resizing image for $IMAGE_SIZE"
+    sudo qemu-img resize \
+    /var/lib/libvirt/images/$VM_IMAGE \
+    $IMAGE_SIZE
 }
 
 function keysGen() {
@@ -189,7 +213,7 @@ function seedConfigGen() {
 #cloud-config
 #vim:syntax=yaml
 users:
-  - name: ec2-user
+  - name: $VM_USER
     gecos: some text can be here
     sudo: ALL=(ALL) NOPASSWD:ALL
     plain_text_passwd: somepassword # it will be better to edit and even to encrypt
@@ -205,7 +229,7 @@ EOF
     if [ ! -f "./seedconfig/meta-data" ]; then
         tee -a seedconfig/meta-data > /dev/null <<EOF
 #cloud-config
-local-hostname: Amazon-Linux-2023.local
+local-hostname: $VM_NAME.local
 EOF
     else 
         echo "[KVM INSTALLER]: meta-data already exists"
@@ -229,7 +253,7 @@ function initKvm() {
         --name $VM_NAME \
         --memory 2048 \
         --vcpus 2 \
-        --disk path=/var/lib/libvirt/images/amzn2-root.qcow2,format=qcow2 \
+        --disk path=/var/lib/libvirt/images/$VM_IMAGE,format=$VM_IMAGE_FORMAT \
         --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
         --os-variant fedora36 \
         --virt-type kvm \
