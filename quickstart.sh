@@ -9,15 +9,6 @@ VM_IMAGE_FORMAT=qcow2
 VM_IMAGE_TEMPLATE=amzn2-template.qcow2
 VM_IMAGE_LINK=https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
 APT_UPDATED_PACKS=0
-
-if [[ "$1" == "--ubuntu" ]]; then
-    VM_NAME="Ubuntu-noble"
-    VM_USER=ubuntu
-    VM_IMAGE=ubuntu-root.img
-    VM_IMAGE_FORMAT=img
-    VM_IMAGE_TEMPLATE=ubuntu-template.img
-    VM_IMAGE_LINK=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-fi
     
 
 function isRoot() {
@@ -291,10 +282,41 @@ function destroyVM () {
     virsh undefine $VM_NAME --remove-all-storage
 }
 
-if [[ "$1" == "--full" ]]; then
+FULL_FLAG=false
+DEBUG_FLAG=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --ubuntu)
+            VM_NAME="Ubuntu-noble"
+            VM_USER=ubuntu
+            VM_IMAGE=ubuntu-root.img
+            VM_IMAGE_FORMAT=img
+            VM_IMAGE_TEMPLATE=ubuntu-template.img
+            VM_IMAGE_LINK=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+            shift
+            ;;  
+        --full)
+            FULL_FLAG=true
+            shift
+            ;;
+        --debug)
+            DEBUG_FLAG=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+if [[ "$FULL_FLAG" == true ]];then
+    isRoot
     fullInstall
     exit
-elif [[ "$1" == "--debug" ]]; then
+fi
+if [[ "$DEBUG_FLAG" == true ]]; then
     debugMenu
     exit
 fi
