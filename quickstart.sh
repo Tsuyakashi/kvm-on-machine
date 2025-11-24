@@ -288,7 +288,7 @@ DEBUG_FLAG=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --ubuntu)
-            VM_NAME="Ubuntu-noble"
+            VM_NAME="ubuntu-noble"
             VM_USER=ubuntu
             VM_IMAGE=ubuntu-root.img
             VM_IMAGE_FORMAT=img
