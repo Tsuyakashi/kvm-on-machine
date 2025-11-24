@@ -8,8 +8,12 @@ VM_IMAGE=amzn2-root.qcow2
 VM_IMAGE_FORMAT=qcow2
 VM_IMAGE_TEMPLATE=amzn2-template.qcow2
 VM_IMAGE_LINK=https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
+
 APT_UPDATED_PACKS=0
     
+IMAGE_SIZE=20g
+VM_MEMORY=2048
+VM_CPUS=2
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
@@ -171,10 +175,8 @@ function cpImage() {
         /var/lib/libvirt/images/$VM_IMAGE
 }
 
-# add to init
-IMAGE_SIZE=40g
 function resizeImage() {
-    echo "Resizing image for $IMAGE_SIZE"
+    echo "[KVM INSTALLER]: Resizing image for $IMAGE_SIZE"
     sudo qemu-img resize \
     /var/lib/libvirt/images/$VM_IMAGE \
     $IMAGE_SIZE
@@ -242,15 +244,30 @@ function initKvm() {
     echo "[KVM INSTALLER]: Installing kvm"
     sudo virt-install \
         --name $VM_NAME \
-        --memory 2048 \
-        --vcpus 2 \
+        --memory $VM_MEMORY \
+        --vcpus $VM_CPUS \
         --disk path=/var/lib/libvirt/images/$VM_IMAGE,format=$VM_IMAGE_FORMAT \
         --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
         --os-variant fedora36 \
         --virt-type kvm \
-        --graphics vnc \
+        --graphics none \
         --console pty,target_type=serial \
-        --import
+        --noautoconsole \
+        --import &
+}
+
+function checkInit() {
+    for i in {1..30}; do
+        if virsh domifaddr $VM_NAME | grep -q "ipv4"; then
+            echo "[KVM INSTALLER]: VM is running on $(virsh domifaddr $VM_NAME \
+            | awk '/ipv4/ { split($4, a, "/"); print a[1] }')"
+            return 0
+        fi
+        echo "[KVM INSTALLER]: VM is starting"
+        sleep 5
+    done
+    echo "VM did not become avaible in time"
+    return 1
 }
 
 function fullInstall() {
@@ -259,10 +276,12 @@ function fullInstall() {
     getAmznImage
     mkLibvirtDir
     cpImage
+    resizeImage
     keysGen
     seedConfigGen
     mkIso
     initKvm
+    checkInit
 }
 
 function listVM () {
