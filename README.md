@@ -11,11 +11,11 @@ cd kvm-on-machine
 ```
 ### 3. Make sure script executable
 ```bash
-chmod +x quickstart.sh
+chmod +x kvm-install.sh
 ```
 ### 4. Run script with `sudo`
 ```bash
-sudo ./quickstart.sh
+sudo ./kvm-install.sh
 ```
 
   ### !! restart may be requiered !! 
@@ -36,15 +36,15 @@ ssh -i "./keys/keys/rsa.key" ec2-user@vm.ip
 ## Added:
 ### Ubuntu distro by running:
 ```bash
-sudo ./quickstart.sh --ubuntu
+sudo ./kvm-install.sh --ubuntu
 ```
 - but personal seedconfig didn't added yet
 - same with resize img func
 ### Also exists:
 ```bash
-sudo ./quickstart.sh --full # to skip instalation approve
+sudo ./kvm-install.sh --full # to skip instalation approve
 
-sudo ./quickstart.sh --debug # for debug menu
+sudo ./kvm-install.sh --debug # for debug menu
 ```
 ## Reqs:
   ```bash
