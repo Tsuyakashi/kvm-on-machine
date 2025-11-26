@@ -120,8 +120,9 @@ function debugMenu () {
 
 function installRequirements() {
     # add installation check
+    echo " "
     echo "[KVM INSTALLER]: Installing requied packages with apt"
-    
+    echo " "
     
     checkPacks "bridge-utils" 
     checkPacks "cpu-checker" 
@@ -133,6 +134,9 @@ function installRequirements() {
     checkPacks "virt-manager" 
     checkPacks "genisoimage"
 
+    echo " "
+    echo "[KVM INSTALLER]: All packages are isntalled"
+    echo " "
 }
 
 function checkPacks() {
@@ -179,7 +183,7 @@ function resizeImage() {
     echo "[KVM INSTALLER]: Resizing image for $IMAGE_SIZE"
     sudo qemu-img resize \
     /var/lib/libvirt/images/$VM_IMAGE \
-    $IMAGE_SIZE
+    $IMAGE_SIZE &>/dev/null
 }
 
 function keysGen() {
@@ -242,7 +246,7 @@ function mkIso() {
 }
 
 function initKvm() {
-    echo "[KVM INSTALLER]: Installing kvm"
+    echo "[KVM INSTALLER]: Installing $VM_NAME VM"
     sudo virt-install \
         --name $VM_NAME \
         --memory $VM_MEMORY \
@@ -254,7 +258,7 @@ function initKvm() {
         --graphics none \
         --console pty,target_type=serial \
         --noautoconsole \
-        --import &
+        --import &>/dev/null
 }
 
 function checkInit() {
