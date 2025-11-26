@@ -231,13 +231,14 @@ EOF
 
 function mkIso() {
     echo "[KVM INSTALLER]: Making iso"
+    # I: -input-charset not specified, using utf-8 (detected in locale settings)
     sudo genisoimage \
         -output /var/lib/libvirt/images/seed.iso \
         -volid cidata \
         -joliet \
         -rock \
         ./seedconfig/user-data \
-        ./seedconfig/meta-data 
+        ./seedconfig/meta-data &>/dev/null
 }
 
 function initKvm() {
