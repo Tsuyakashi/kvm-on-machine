@@ -186,7 +186,7 @@ function resizeImage() {
 
 function createDiskB() {
     echo "[KVM INSTALLER]: Creating additional disk"
-    sudo qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu-noble-disk.qcow2 20G
+    sudo qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu-noble-disk.qcow2 25G &>/dev/null
 }
 
 function keysGen() {
