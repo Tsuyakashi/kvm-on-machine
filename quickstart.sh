@@ -263,7 +263,7 @@ function checkInit() {
             | awk '/ipv4/ { split($4, a, "/"); print a[1] }')"
             return 0
         fi
-        echo "[KVM INSTALLER]: VM is starting"
+        echo "[KVM INSTALLER]: VM is still starting"
         sleep 5
     done
     echo "VM did not become avaible in time"
