@@ -181,9 +181,12 @@ function cpImage() {
 
 function resizeImage() {
     echo "[KVM INSTALLER]: Resizing image for $IMAGE_SIZE"
-    sudo qemu-img resize \
-    /var/lib/libvirt/images/$VM_IMAGE \
-    $IMAGE_SIZE &>/dev/null
+    sudo qemu-img resize /var/lib/libvirt/images/$VM_IMAGE $IMAGE_SIZE &>/dev/null
+}
+
+function createDiskB() {
+    echo "[KVM INSTALLER]: Creating additional disk"
+    sudo qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu-noble-disk.qcow2 20G
 }
 
 function keysGen() {
@@ -253,6 +256,7 @@ function initKvm() {
         --vcpus $VM_CPUS \
         --disk path=/var/lib/libvirt/images/$VM_IMAGE,format=$VM_IMAGE_FORMAT \
         --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
+        --disk path=/var/lib/libvirt/images/ubuntu-noble-disk.qcow2,format=qcow2 \
         --os-variant fedora36 \
         --virt-type kvm \
         --graphics none \
@@ -282,6 +286,7 @@ function fullInstall() {
     mkLibvirtDir
     cpImage
     resizeImage
+    createDiskB
     keysGen
     seedConfigGen
     mkIso
