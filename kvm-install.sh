@@ -12,7 +12,7 @@ VM_CPUS=2
 
 FULL_FLAG=false
 DEBUG_FLAG=false
-VM_OS="amazon" # default distribution
+VM_OS="ubuntu" # default distribution
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
@@ -129,7 +129,7 @@ function keysGen() {
 function seedConfigGen() {
     echo "[KVM INSTALLER]: Creating seed config"
     mkdir -p ./seedconfig/
-    if [ ! -f "./seedconfig/user-data" ]; then
+    if [ ! -f "./seedconfig/user-data" ] || ! grep "$VM_USER" ./seedconfig/user-data >/dev/null; then
         tee ./seedconfig/user-data &>/dev/null <<EOF
 #cloud-config
 #vim:syntax=yaml
@@ -147,7 +147,7 @@ EOF
         echo "[KVM INSTALLER]: user-data already exists"
     fi
     
-    if [ ! -f "./seedconfig/meta-data" ]; then
+    if [ ! -f "./seedconfig/meta-data" ] || ! grep "$VM_NAME" ./seedconfig/meta-data >/dev/null; then
         tee ./seedconfig/meta-data &>/dev/null <<EOF
 #cloud-config
 local-hostname: $VM_NAME.local
@@ -162,7 +162,7 @@ function mkIso() {
     echo "[KVM INSTALLER]: Making iso"
     # I: -input-charset not specified, using utf-8 (detected in locale settings)
     genisoimage \
-        -output /var/lib/libvirt/images/seed.iso \
+        -output /var/lib/libvirt/images/seed-$VM_NAME.iso \
         -volid cidata \
         -joliet \
         -rock \
@@ -177,7 +177,7 @@ function initKvm() {
         --memory $VM_MEMORY \
         --vcpus $VM_CPUS \
         --disk path=/var/lib/libvirt/images/$VM_IMAGE,format=qcow2 \
-        --disk path=/var/lib/libvirt/images/seed.iso,device=cdrom \
+        --disk path=/var/lib/libvirt/images/seed-$VM_NAME.iso,device=cdrom \
         --disk path=/var/lib/libvirt/images/$additionalDiskName,format=qcow2 \
         --os-variant $OS_VARIANT \
         --virt-type kvm \
@@ -269,8 +269,12 @@ function destroyVM () {
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dist)
+            if [[ -z "$2" ]]; then
+                echo "Error: --dist requires a distribution name"
+                exit 1
+            fi
             VM_OS="$2"
-            shift
+            shift 2
             ;;
         --full)
             FULL_FLAG=true
