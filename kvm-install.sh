@@ -12,7 +12,7 @@ VM_CPUS=2
 
 FULL_FLAG=false
 DEBUG_FLAG=false
-VM_OS="ubuntu" # default distribution
+VM_OS="amazon" # default distribution
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
@@ -68,11 +68,12 @@ function checkPacks() {
     fi
 }    
 
-function getAmznImage() {
+function getImage() {
     echo "[KVM INSTALLER]: Getting $VM_NAME image"
     if [ ! -f "./images/$VM_IMAGE_TEMPLATE" ]; then
         mkdir -p ./images/
         wget -O ./images/$VM_IMAGE_TEMPLATE $VM_IMAGE_LINK
+        chown -R $SUDO_USER:$SUDO_USER ./images
     else 
         echo "[KVM INSTALLER]: Already downloaded"
     fi
@@ -94,7 +95,11 @@ function cpImage() {
 
 function resizeImage() {
     echo "[KVM INSTALLER]: Resizing image for $IMAGE_SIZE"
-    qemu-img resize /var/lib/libvirt/images/$VM_IMAGE $IMAGE_SIZE &>/dev/null
+    if [[ "$VM_IMAGE" != "amzn2-root.qcow2" ]]; then
+        qemu-img resize /var/lib/libvirt/images/$VM_IMAGE $IMAGE_SIZE >/dev/null
+    else
+        echo "[KVM INSTALLER]: Amazon Linux does not support resizing, skipping"
+    fi
 }
 
 function createDiskB() {
@@ -125,7 +130,7 @@ function seedConfigGen() {
     echo "[KVM INSTALLER]: Creating seed config"
     mkdir -p ./seedconfig/
     if [ ! -f "./seedconfig/user-data" ]; then
-        tee ./seedconfig/user-data <<EOF
+        tee ./seedconfig/user-data &>/dev/null <<EOF
 #cloud-config
 #vim:syntax=yaml
 users:
@@ -143,13 +148,14 @@ EOF
     fi
     
     if [ ! -f "./seedconfig/meta-data" ]; then
-        tee ./seedconfig/meta-data <<EOF
+        tee ./seedconfig/meta-data &>/dev/null <<EOF
 #cloud-config
 local-hostname: $VM_NAME.local
 EOF
     else 
         echo "[KVM INSTALLER]: meta-data already exists"
     fi
+    chown -R $SUDO_USER:$SUDO_USER ./seedconfig
 }
 
 function mkIso() {
@@ -178,7 +184,7 @@ function initKvm() {
         --graphics none \
         --console pty,target_type=serial \
         --noautoconsole \
-        --import &>/dev/null
+        --import 
 }
 
 function checkInit() {
@@ -197,7 +203,7 @@ function checkInit() {
 
 function fullInstall() {
     installRequirements
-    getAmznImage
+    getImage
     mkLibvirtDir
     cpImage
     resizeImage
@@ -278,6 +284,10 @@ while [[ $# -gt 0 ]]; do
             echo "  --help - show this help message"
             exit 0
             ;;
+        --debug)
+            DEBUG_FLAG=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -285,21 +295,23 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if $VM_OS == "ubuntu"; then
+if $DEBUG_FLAG; then
+    echo "debug mode is enabled"
+fi
+
+if [[ "$VM_OS" == "ubuntu" ]]; then
     VM_NAME="Ubuntu-Noble"
-    VM_USER=ubuntu
-    OS_VARIANT="ubuntu-22.04"
-    VM_IMAGE=ubuntu-root.img
-    VM_IMAGE_FORMAT=img
-    VM_IMAGE_TEMPLATE=ubuntu-template.img
-    VM_IMAGE_LINK=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-elif $VM_OS == "amazon"; then
+    VM_USER="ubuntu"
+    OS_VARIANT="ubuntujammy"
+    VM_IMAGE="ubuntu-root.qcow2"
+    VM_IMAGE_TEMPLATE=ubuntu-template.qcow2
+    VM_IMAGE_LINK=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.qcow2
+elif [[ "$VM_OS" == "amazon" ]]; then
     VM_NAME="Amazon-Linux"
-    VM_USER=ec2-user
-    OS_VARIANT="amazon-2023"
-    VM_IMAGE=amzn2-root.qcow2
-    VM_IMAGE_TEMPLATE=amzn2-template.qcow2
-    VM_ADDITIONAL_DISK_NAME=""
+    VM_USER="ec2-user"
+    OS_VARIANT="fedora38"
+    VM_IMAGE="amzn2-root.qcow2"
+    VM_IMAGE_TEMPLATE="amzn2-template.qcow2"
     VM_IMAGE_LINK=https://cdn.amazonlinux.com/al2023/os-images/2023.9.20251105.0/kvm/al2023-kvm-2023.9.20251105.0-kernel-6.1-x86_64.xfs.gpt.qcow2
 else
     echo "Unknown distribution: $VM_OS"
